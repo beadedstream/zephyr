@@ -12,6 +12,9 @@
 	compatible = "nordic,d605n_spot";
 
 	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,uart-mcumgr = &uart0;
 		zephyr,bt-mon-uart = &uart0;
 		zephyr,bt-c2h-uart = &uart0;
 		zephyr,sram = &sram0;
@@ -22,16 +25,16 @@
 	leds {
 		compatible = "gpio-leds";
 		led0: led_0 {
-			gpios = <&gpio0 9 GPIO_ACTIVE_LOW>;
-			label = "Green LED 0";
+			gpios = <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			label = "Blue BLE LED";
 		};
 		led1: led_1 {
 			gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
-			label = "Green LED 1";
+			label = "Green Activity LED";
 		};
 		led2: led_2 {
-			gpios = <&gpio0 11 GPIO_ACTIVE_LOW>;
-			label = "Green LED 2";
+			gpios = <&gpio0 9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			label = "Red Status LED";
 		};
 	};
 
@@ -64,15 +67,12 @@
 			   <21 0 &gpio0 27 0>;	/* D15 */
 	};
 
+	/* Enable P0.30 to use adc */
 	arduino_adc: analog-connector {
 		compatible = "arduino,uno-adc";
 		#io-channel-cells = <1>;
-		io-channel-map = <0 &adc 1>,	/* A0 = P0.3 = AIN1 */
-				 <1 &adc 2>,	/* A1 = P0.4 = AIN2 */
-				 <2 &adc 4>,	/* A2 = P0.28 = AIN4 */
-				 <3 &adc 5>,	/* A3 = P0.29 = AIN5 */
-				 <4 &adc 6>,	/* A4 = P0.30 = AIN6 */
-				 <5 &adc 7>;	/* A5 = P0.31 = AIN7 */
+		io-channel-map = 	<0 &adc 1>,	/* A0 = P0.3 = AIN1 / CHECK_VBATT */
+							<1 &adc 6>;	/* A5 = P0.31 = AIN6 / HALF_VBATT */
 	};
 
 	/* These aliases are provided for compatibility with samples */
@@ -82,6 +82,22 @@
 		led2 = &led2;
 		usbd0 = &usbd;
 	};
+};
+
+&led0 {
+	status = "okay";
+};
+
+&led1 {
+	status = "okay";
+};
+
+&led2 {
+	status = "okay";
+};
+
+&adc {
+	status = "okay";
 };
 
 &gpiote {
