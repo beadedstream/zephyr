@@ -24,6 +24,36 @@
 
 	leds {
 		compatible = "gpio-leds";
+
+        pciepwren: pcie_pwr_en {
+			gpios = <&gpio1 6 (GPIO_ACTIVE_HIGH)>;
+			label = "PCIe_PWR_EN";
+		};
+        tacpwrenable: tac_pwr_enable {
+			gpios = <&gpio1 7 (GPIO_ACTIVE_HIGH)>;
+			label = "1-wire TAC_POWER_EN";
+		};
+        onewirein: one_wire_in {
+			gpios = <&gpio0 13 (GPIO_ACTIVE_HIGH)>;      /* TBD  this is an INPUT */
+			label = "1-wire _1W_IN";
+		};
+        onewireup: one_wire_up {
+			gpios = <&gpio0 14 (GPIO_ACTIVE_HIGH)>;
+			label = "1-wire _1W_UP";
+		};
+        onewiredown: one_wire_down {
+			gpios = <&gpio0 16 (GPIO_ACTIVE_HIGH)>;
+			label = "1-wire _1W_DOWN";
+		};
+		tp5: tp_5 {
+			gpios = <&gpio0 28 (GPIO_ACTIVE_HIGH)>;
+			label = "1-wire TP5";
+		};
+		tp10: tp_10 {
+			gpios = <&gpio0 29 (GPIO_ACTIVE_HIGH)>;
+			label = "1-wire TP10";
+		};
+
 		led0: led_0 {
 			gpios = <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 			label = "Blue BLE LED";
@@ -77,12 +107,27 @@
 
 	/* These aliases are provided for compatibility with samples */
 	aliases {
+        pciepwren = &pciepwren;
+        tacpwrenable = &tacpwrenable;
+        onewirein = &onewirein;
+        onewireup = &onewireup;
+        onewiredown = &onewiredown;
+		tp5 = &tp5;
+		tp10 = &tp10;
 		led0 = &led0;
 		led1 = &led1;
 		led2 = &led2;
 		usbd0 = &usbd;
 	};
 };
+
+&pciepwren    { status = "okay"; };
+&tacpwrenable { status = "okay"; };
+&onewirein    { status = "okay"; };
+&onewireup    { status = "okay"; };
+&onewiredown  { status = "okay"; };
+&tp5          { status = "okay"; };
+&tp10         { status = "okay"; };
 
 &led0 {
 	status = "okay";
