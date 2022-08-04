@@ -25,15 +25,15 @@
 	leds {
 		compatible = "gpio-leds";
 		led0: led_0 {
-			gpios = <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
 			label = "Blue BLE LED";
 		};
 		led1: led_1 {
-			gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
 			label = "Green Activity LED";
 		};
 		led2: led_2 {
-			gpios = <&gpio0 9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
 			label = "Red Status LED";
 		};
 	};
@@ -75,14 +75,27 @@
 							<1 &adc 6>;	/* A5 = P0.31 = AIN6 / HALF_VBATT */
 	};
 
+	/* vbatt {
+      compatible = "voltage-divider";
+      io-channels = <&adc 6>;
+      output-ohms = <180000>;
+      full-ohms = <(1500000 + 180000)>;
+      power-gpios = <&sx1509b 6 0>;
+   };*/
+
 	/* These aliases are provided for compatibility with samples */
 	aliases {
 		led0 = &led0;
 		led1 = &led1;
 		led2 = &led2;
 		usbd0 = &usbd;
+		/* vbatt = &vbatt; */
 	};
 };
+
+/* &vbatt {
+	status = "okay";
+} */
 
 &led0 {
 	status = "okay";
