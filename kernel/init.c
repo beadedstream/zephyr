@@ -416,11 +416,21 @@ FUNC_NORETURN void z_cstart(void)
 	z_dummy_thread_init(&dummy_thread);
 #endif
 	/* do any necessary initialization of static devices */
+	printk("\nbefore z_device_state_init\n");
+
+
 	z_device_state_init();
+
+	printk("\nbefore _SYS_INIT_LEVEL_PRE_KERNEL_1\n");
 
 	/* perform basic hardware initialization */
 	z_sys_init_run_level(_SYS_INIT_LEVEL_PRE_KERNEL_1);
+
+	printk("\nafter _SYS_INIT_LEVEL_PRE_KERNEL_1\n");
+
 	z_sys_init_run_level(_SYS_INIT_LEVEL_PRE_KERNEL_2);
+
+	printk("\nafter _SYS_INIT_LEVEL_PRE_KERNEL_2\n");
 
 #ifdef CONFIG_STACK_CANARIES
 	uintptr_t stack_guard;

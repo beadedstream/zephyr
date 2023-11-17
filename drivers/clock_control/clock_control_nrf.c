@@ -190,21 +190,21 @@ static void clkstarted_handle(const struct device *dev,
 
 static inline void anomaly_132_workaround(void)
 {
-#if (CONFIG_NRF52_ANOMALY_132_DELAY_US - 0)
+// #if (CONFIG_NRF52_ANOMALY_132_DELAY_US - 0)
 	static bool once;
 
 	if (!once) {
-		k_busy_wait(CONFIG_NRF52_ANOMALY_132_DELAY_US);
+		k_busy_wait(330);
 		once = true;
 	}
-#endif
+// #endif
 }
 
 static void lfclk_start(void)
 {
-	if (IS_ENABLED(CONFIG_NRF52_ANOMALY_132_WORKAROUND)) {
+	//if (IS_ENABLED(CONFIG_NRF52_ANOMALY_132_WORKAROUND)) {
 		anomaly_132_workaround();
-	}
+	//}
 
 	nrfx_clock_lfclk_start();
 }
@@ -475,6 +475,8 @@ static void lfclk_spinwait(enum nrf_lfclk_start_mode mode)
 		: CLOCK_CONTROL_NRF_K32SRC;
 	nrf_clock_lfclk_t type;
 
+	printk("\nbefore nrf_clock_lf_srccopy_get\n");
+
 	if ((mode == CLOCK_CONTROL_NRF_LF_START_AVAILABLE) &&
 	    (target_type == NRF_CLOCK_LFCLK_Xtal) &&
 	    (nrf_clock_lf_srccopy_get(NRF_CLOCK) == CLOCK_CONTROL_NRF_K32SRC)) {
@@ -487,12 +489,22 @@ static void lfclk_spinwait(enum nrf_lfclk_start_mode mode)
 		return;
 	}
 
+	printk("\nbefore isr_mode\n");
+
 	bool isr_mode = k_is_in_isr() || k_is_pre_kernel();
 	int key = isr_mode ? irq_lock() : 0;
 
 	if (!isr_mode) {
+		printk("\n!isr_mode\n");
+
 		nrf_clock_int_disable(NRF_CLOCK, NRF_CLOCK_INT_LF_STARTED_MASK);
 	}
+
+	printk("\nbefore nrfx_clock_is_running\n");
+
+	bool is_running = nrfx_clock_is_running(d, (void *)&type);
+	printk("\nis%srunning before\n", is_running ? " " : " not ");
+	printk("\ntype: %s\n", (type == NRF_CLOCK_LFCLK_Xtal) ? "NRF_CLOCK_LFCLK_Xtal" : "NRF_CLOCK_LFCLK_RC");
 
 	while (!(nrfx_clock_is_running(d, (void *)&type)
 		 && ((type == target_type)
@@ -502,10 +514,21 @@ static void lfclk_spinwait(enum nrf_lfclk_start_mode mode)
 		 */
 		if (!IS_ENABLED(CONFIG_CLOCK_CONTROL_NRF_K32SRC_SYNTH)) {
 			if (isr_mode || !IS_ENABLED(CONFIG_MULTITHREADING)) {
+				printk("\nbefore k_cpu_atomic_idle\n");
 				k_cpu_atomic_idle(key);
+				printk("\nafter k_cpu_atomic_idle\n");
 			} else {
 				k_msleep(1);
 			}
+		}
+
+		if (nrf_clock_event_check(NRF_CLOCK, NRF_CLOCK_EVENT_LFCLKSTARTED)) {
+			printk("\nevent LFCLK_STARTED started\n");
+			printk("\n%u\n", nrf_clock_lf_srccopy_get(NRF_CLOCK));
+			
+		} else {
+			printk("\nevent LFCLK_STARTED NOT started\n");
+			printk("\n%u\n", nrf_clock_lf_srccopy_get(NRF_CLOCK));
 		}
 
 		/* Clock interrupt is locked, LFCLKSTARTED is handled here. */
@@ -522,14 +545,23 @@ static void lfclk_spinwait(enum nrf_lfclk_start_mode mode)
 			 * would not wake up from idle.
 			 */
 			NVIC_ClearPendingIRQ(DT_INST_IRQN(0));
+
+			printk("\nNRF_CLOCK_TASK_LFCLKSTART trigger from loop\n");	
+
 			nrf_clock_task_trigger(NRF_CLOCK,
-					       NRF_CLOCK_TASK_LFCLKSTART);
+					       NRF_CLOCK_TASK_LFCLKSTART);						   
 		}
 	}
 
+	bool is_running_after = nrfx_clock_is_running(d, (void *)&type);
+	printk("\nis%srunning after\n", is_running_after ? " " : " not ");
+	printk("\ntype: %s\n", (type == NRF_CLOCK_LFCLK_Xtal) ? "NRF_CLOCK_LFCLK_Xtal" : "NRF_CLOCK_LFCLK_RC");
+
 	if (isr_mode) {
+		printk("\nisr_mode unlock\n");
 		irq_unlock(key);
 	} else {
+		printk("\nisr_mode nrf_clock_int_enable\n");
 		nrf_clock_int_enable(NRF_CLOCK, NRF_CLOCK_INT_LF_STARTED_MASK);
 	}
 }
@@ -539,13 +571,23 @@ void z_nrf_clock_control_lf_on(enum nrf_lfclk_start_mode start_mode)
 	static atomic_t on;
 	static struct onoff_client cli;
 
+	printk("\nbefore atomic_set\n");
+
 	if (atomic_set(&on, 1) == 0) {
 		int err;
+
+		printk("\nbefore get_onoff_manager\n");
+
 		struct onoff_manager *mgr =
 				get_onoff_manager(CLOCK_DEVICE,
 						  CLOCK_CONTROL_NRF_TYPE_LFCLK);
 
+		printk("\nbefore sys_notify_init_spinwait\n");
+
 		sys_notify_init_spinwait(&cli.notify);
+
+		printk("\nbefore onoff_request\n");
+
 		err = onoff_request(mgr, &cli);
 		__ASSERT_NO_MSG(err >= 0);
 	}
@@ -558,7 +600,12 @@ void z_nrf_clock_control_lf_on(enum nrf_lfclk_start_mode start_mode)
 	switch (start_mode) {
 	case CLOCK_CONTROL_NRF_LF_START_AVAILABLE:
 	case CLOCK_CONTROL_NRF_LF_START_STABLE:
+		printk("\nbefore lfclk_spinwait\n");
+
+
 		lfclk_spinwait(start_mode);
+
+		printk("\after lfclk_spinwait\n");
 		break;
 
 	case CLOCK_CONTROL_NRF_LF_START_NOWAIT:
@@ -603,6 +650,7 @@ static void clock_event_handler(nrfx_clock_evt_type_t event)
 		    !IS_ENABLED(CONFIG_CLOCK_CONTROL_NRF_FORCE_ALT)) {
 			z_nrf_clock_calibration_lfclk_started();
 		}
+		printk("\nclkstarted_handle\n");
 		clkstarted_handle(dev, CLOCK_CONTROL_NRF_TYPE_LFCLK);
 		break;
 	case NRFX_CLOCK_EVT_CAL_DONE:
@@ -664,7 +712,7 @@ static int clk_init(const struct device *dev)
 	    !IS_ENABLED(CONFIG_CLOCK_CONTROL_NRF_FORCE_ALT)) {
 		struct nrf_clock_control_data *data = dev->data;
 
-		z_nrf_clock_calibration_init(data->mgr);
+	z_nrf_clock_calibration_init(data->mgr);
 	}
 
 	nrfx_clock_enable();

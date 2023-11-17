@@ -232,6 +232,8 @@ void z_set_timeout_expiry(int32_t ticks, bool is_idle)
 
 void sys_clock_announce(int32_t ticks)
 {
+
+//	printk("\nsys_clock_announce enter\n");
 #ifdef CONFIG_TIMESLICING
 	z_time_slice(ticks);
 #endif
@@ -264,6 +266,8 @@ void sys_clock_announce(int32_t ticks)
 	sys_clock_set_timeout(next_timeout(), false);
 
 	k_spin_unlock(&timeout_lock, key);
+
+//	printk("\nsys_clock_announce exit\n");
 }
 
 int64_t sys_clock_tick_get(void)

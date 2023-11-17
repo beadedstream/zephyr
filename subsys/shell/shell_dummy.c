@@ -5,7 +5,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
+ 
 #include <shell/shell_dummy.h>
 #include <init.h>
 

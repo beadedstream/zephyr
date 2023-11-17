@@ -189,3 +189,11 @@ void z_shell_wildcard_finalize(const struct shell *shell)
 	       shell->ctx->cmd_tmp_buff_len);
 	shell->ctx->cmd_buff_len = shell->ctx->cmd_tmp_buff_len;
 }
+
+// #include <fatal.h>
+
+// void k_sys_fatal_error_handler(unsigned int reason, const z_arch_esf_t *esf) {
+//     // printk("\nfatal error\n");
+
+//     // LOG_ERR("!!!!!!!!!Halting system");
+// }

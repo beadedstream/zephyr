@@ -110,7 +110,7 @@ void idle(void *unused1, void *unused2, void *unused3)
 		 * nothing else will run once it starts.
 		 */
 		if (_kernel.ready_q.cache != _current) {
-			z_swap_unlocked();
+			//z_swap_unlocked();
 		}
 # endif
 #endif

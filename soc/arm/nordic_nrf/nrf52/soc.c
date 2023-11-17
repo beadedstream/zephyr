@@ -70,7 +70,7 @@ static int nordicsemi_nrf52_init(const struct device *arg)
 
 #if defined(CONFIG_SOC_DCDC_NRF52X)
 	nrf_power_dcdcen_set(NRF_POWER, true);
-#endif
+#endif	
 
 	/* Install default handler that simply resets the CPU
 	* if configured in the kernel, NOP otherwise

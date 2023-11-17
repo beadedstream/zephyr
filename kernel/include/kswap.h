@@ -191,11 +191,14 @@ static inline int z_swap_irqlock(unsigned int key)
 static ALWAYS_INLINE int z_swap(struct k_spinlock *lock, k_spinlock_key_t key)
 {
 	k_spin_release(lock);
+	//k_busy_wait(10);
+	//printk(".");
 	return z_swap_irqlock(key.key);
 }
 
 static inline void z_swap_unlocked(void)
 {
+	printk("\nz_swap_unlocked\n");
 	(void) z_swap_irqlock(arch_irq_lock());
 }
 

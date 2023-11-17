@@ -230,6 +230,8 @@ static void sys_clock_timeout_handler(int32_t chan,
 				      uint32_t cc_value,
 				      void *user_data)
 {
+//	printk("\nsys_clock_timeout_handler enter\n");
+
 	uint32_t dticks = counter_sub(cc_value, last_count) / CYC_PER_TICK;
 
 	last_count += dticks * CYC_PER_TICK;
@@ -244,6 +246,8 @@ static void sys_clock_timeout_handler(int32_t chan,
 
 	sys_clock_announce(IS_ENABLED(CONFIG_TICKLESS_KERNEL) ?
 						dticks : (dticks > 0));
+
+//	printk("\nsys_clock_timeout_handler exit\n");
 }
 
 /* Note: this function has public linkage, and MUST have this
@@ -346,13 +350,19 @@ int sys_clock_driver_init(const struct device *dev)
 			    sys_clock_timeout_handler, NULL);
 	}
 
+	printk("\nbefore z_nrf_clock_control_lf_on\n");
+
 	z_nrf_clock_control_lf_on(mode);
+
+	printk("\nafter z_nrf_clock_control_lf_on\n");
 
 	return 0;
 }
 
 void sys_clock_set_timeout(int32_t ticks, bool idle)
 {
+	//printk("\nsys_clock_set_timeout enter\n");
+
 	ARG_UNUSED(idle);
 	uint32_t cyc;
 
@@ -390,6 +400,8 @@ void sys_clock_set_timeout(int32_t ticks, bool idle)
 
 	cyc += last_count;
 	compare_set(0, cyc, sys_clock_timeout_handler, NULL);
+
+	//printk("\nsys_clock_set_timeout exit\n");
 }
 
 uint32_t sys_clock_elapsed(void)

@@ -665,6 +665,8 @@ ALWAYS_INLINE void z_unpend_thread_no_timeout(struct k_thread *thread)
 /* Timeout handler for *_thread_timeout() APIs */
 void z_thread_timeout(struct _timeout *timeout)
 {
+	//printk("\nz_thread_timeout enter\n");
+
 	struct k_thread *thread = CONTAINER_OF(timeout,
 					       struct k_thread, base.timeout);
 
@@ -681,6 +683,8 @@ void z_thread_timeout(struct _timeout *timeout)
 			ready_thread(thread);
 		}
 	}
+
+	//printk("\nz_thread_timeout exit\n");
 }
 #endif
 
@@ -1242,7 +1246,11 @@ static int32_t z_tick_sleep(k_ticks_t ticks)
 	z_add_thread_timeout(_current, timeout);
 	z_mark_thread_as_suspended(_current);
 
+	printk("\nbefore z_swap\n");
+
 	(void)z_swap(&sched_spinlock, key);
+
+	printk("\nafter z_swap\n");
 
 	__ASSERT(!z_is_thread_state_set(_current, _THREAD_SUSPENDED), "");
 
