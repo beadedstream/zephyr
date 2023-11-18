@@ -350,11 +350,7 @@ int sys_clock_driver_init(const struct device *dev)
 			    sys_clock_timeout_handler, NULL);
 	}
 
-	printk("\nbefore z_nrf_clock_control_lf_on\n");
-
 	z_nrf_clock_control_lf_on(mode);
-
-	printk("\nafter z_nrf_clock_control_lf_on\n");
 
 	return 0;
 }
