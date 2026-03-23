@@ -615,7 +615,13 @@ static void uart_disable(const struct device *dev)
 	}
 #endif
 
-	nrf_uarte_disable(get_uarte_instance(dev));
+	/* Beadedstream workaround: do not disable UARTE0 or UARTE1 during
+	 * PM suspend — causes excessive current draw on D605N/Spot Logger.
+	 */
+	if (get_uarte_instance(dev) != NRF_UARTE0 &&
+	    get_uarte_instance(dev) != NRF_UARTE1) {
+		nrf_uarte_disable(get_uarte_instance(dev));
+	}
 }
 #endif
 

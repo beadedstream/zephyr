@@ -30,6 +30,12 @@ if(HWMv1)
   list(REMOVE_ITEM kconfig_soc_root ${ZEPHYR_BASE})
   set(soc_defconfig_file ${KCONFIG_BINARY_DIR}/soc/Kconfig.defconfig)
 
+  # Always create the file so Kconfig.zephyr 'source' doesn't fail when
+  # there are no extra SOC_ROOTs (only ZEPHYR_BASE).
+  if(NOT EXISTS ${soc_defconfig_file})
+    file(WRITE ${soc_defconfig_file} "")
+  endif()
+
   set(OPERATION WRITE)
   foreach(root ${kconfig_soc_root})
     file(APPEND ${soc_defconfig_file}

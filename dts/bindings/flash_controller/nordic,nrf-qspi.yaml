@@ -39,3 +39,11 @@ properties:
 
   pinctrl-0:
     required: true
+
+  beadedstream,qspi-csn-scan:
+    type: array
+    required: false
+    description: |
+      List of CS pin numbers to scan at init to find the active QSPI flash chip.
+      Used on D605N/Spot Logger which have two possible CS pins depending on board
+      revision. Avoids NRF_DT_CHECK_PIN_ASSIGNMENTS compile error with PINCTRL.

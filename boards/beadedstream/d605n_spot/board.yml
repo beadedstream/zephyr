@@ -1,0 +1,5 @@
+board:
+  name: d605n_spot
+  vendor: beadedstream
+  socs:
+  - name: nrf52840
